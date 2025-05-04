@@ -3,6 +3,7 @@ import functools
 import os
 import pathlib
 import sys
+from datetime import datetime
 
 os.environ["MUJOCO_GL"] = "osmesa"
 
@@ -20,6 +21,7 @@ from parallel import Parallel, Damy
 import torch
 from torch import nn
 from torch import distributions as torchd
+import wandb
 
 
 to_np = lambda x: x.detach().cpu().numpy()
@@ -54,6 +56,13 @@ class Dreamer(nn.Module):
             random=lambda: expl.Random(config, act_space),
             plan2explore=lambda: expl.Plan2Explore(config, self._wm, reward),
         )[config.expl_behavior]().to(self._config.device)
+        
+        wandb.init(
+            project="dreamerv3",
+            name=f"{config.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+            entity="yixuan1999",
+            mode="online",
+        )
 
     def __call__(self, obs, reset, state=None, training=True):
         step = self._step
@@ -73,6 +82,11 @@ class Dreamer(nn.Module):
                     self._metrics[name] = []
                 if self._config.video_pred_log:
                     openl = self._wm.video_pred(next(self._dataset))
+                    for i in range(openl.shape[0]):
+                        vid_np = openl[i].detach().cpu().numpy()
+                        vid_np = np.transpose(vid_np, (0, 3, 1, 2))
+                        vid_np = (vid_np * 255).astype(np.uint8)
+                        wandb.log({f"train_vis/video_{i}": wandb.Video(vid_np, caption=f"video_{i}")})
                     self._logger.video("train_openl", to_np(openl))
                 self._logger.write(fps=True)
 
@@ -117,6 +131,9 @@ class Dreamer(nn.Module):
     def _train(self, data):
         metrics = {}
         post, context, mets = self._wm._train(data)
+        # log train metrics
+        log_mets = {"train/" + k: v for k, v in mets.items()}
+        wandb.log(log_mets)
         metrics.update(mets)
         start = post
         reward = lambda f, s, a: self._wm.heads["reward"](
@@ -315,6 +332,11 @@ def main(config):
             )
             if config.video_pred_log:
                 video_pred = agent._wm.video_pred(next(eval_dataset))
+                for i in range(video_pred.shape[0]):
+                    vid_np = video_pred[i].detach().cpu().numpy()
+                    vid_np = np.transpose(vid_np, (0, 3, 1, 2))
+                    vid_np = (vid_np * 255).astype(np.uint8)
+                    wandb.log({f"val_vis/video_{i}": wandb.Video(vid_np, caption=f"video_{i}")})
                 logger.video("eval_openl", to_np(video_pred))
         print("Start training.")
         state = tools.simulate(

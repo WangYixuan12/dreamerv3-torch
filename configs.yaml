@@ -1,4 +1,5 @@
 defaults:
+  name: 'default'
 
   logdir: null
   traindir: null

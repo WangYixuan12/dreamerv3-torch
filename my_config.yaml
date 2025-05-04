@@ -1,3 +1,4 @@
+name: 'sim_aloha'
 logdir: ./logdir/my_training
 traindir: null
 evaldir: null

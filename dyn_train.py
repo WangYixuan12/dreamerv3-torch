@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import datetime
 
 import numpy as np
 import torch
@@ -41,7 +42,7 @@ val_dataloader = torch.utils.data.DataLoader(
 
 wandb.init(
     project="dreamerv3",
-    name="test",
+    name=f"{config.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
     entity="yixuan1999",
     config=OmegaConf.to_container(config, resolve=True),
     mode="online",
@@ -53,12 +54,11 @@ wm.to(config.device)
 num_epoch = 1000
 step_i = 0
 pred_vid_every_steps = 1000
-val_every_steps = 1000
+val_every_steps = 10
 ckpt_every_steps = 1000
 
 for epoch in range(num_epoch):
     for data in tqdm(train_dataloader, desc=f"Epoch {epoch}", total=len(train_dataloader)):
-        step_i += 1
         post, context, mets = wm._train(data)
         
         # log train metrics
@@ -75,7 +75,7 @@ for epoch in range(num_epoch):
         # val
         if step_i % val_every_steps == 0:
             val_data = next(iter(val_dataloader))
-            post, context, mets = wm._train(val_data)
+            post, context, mets = wm._val(val_data)
             log_mets = {"val/" + k: v for k, v in mets.items()}
             wandb.log(log_mets)
             vid = wm.video_pred(val_data)
@@ -84,6 +84,7 @@ for epoch in range(num_epoch):
                 vid_np = np.transpose(vid_np, (0, 3, 1, 2))
                 vid_np = (vid_np * 255).astype(np.uint8)
                 wandb.log({f"val_vis/video_{i}": wandb.Video(vid_np, caption=f"video_{i}")})
+        step_i += 1
         
         # save model
         if step_i % ckpt_every_steps == 0:
