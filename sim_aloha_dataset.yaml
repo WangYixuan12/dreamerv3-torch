@@ -1,0 +1,29 @@
+defaults:
+  - base_dataset
+
+dataset_dir: '/media/yixuan/Extreme SSD/projects/diffusion-forcing/data/sim_aloha/pusht_0407'
+horizon: 10
+skip_frame: 5
+pad_after: 7
+pad_before: 1
+rotation_rep: rotation_6d
+seed: 42
+val_ratio: 0.1
+skip_idx: 20
+use_cache: true
+resolution: 128
+obs_keys: [top_pov]
+delta_action: false
+action_mode: bimanual_push
+# action_mode: single_ee
+shape_meta:
+  action:
+    shape:
+    - 20
+  obs:
+    top_pov:
+      shape:
+      - 3 # C
+      - 128 # H
+      - 128 # W
+      type: rgb

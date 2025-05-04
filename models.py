@@ -60,30 +60,30 @@ class WorldModel(nn.Module):
         self.heads["decoder"] = networks.MultiDecoder(
             feat_size, shapes, **config.decoder
         )
-        self.heads["reward"] = networks.MLP(
-            feat_size,
-            (255,) if config.reward_head["dist"] == "symlog_disc" else (),
-            config.reward_head["layers"],
-            config.units,
-            config.act,
-            config.norm,
-            dist=config.reward_head["dist"],
-            outscale=config.reward_head["outscale"],
-            device=config.device,
-            name="Reward",
-        )
-        self.heads["cont"] = networks.MLP(
-            feat_size,
-            (),
-            config.cont_head["layers"],
-            config.units,
-            config.act,
-            config.norm,
-            dist="binary",
-            outscale=config.cont_head["outscale"],
-            device=config.device,
-            name="Cont",
-        )
+        # self.heads["reward"] = networks.MLP(
+        #     feat_size,
+        #     (255,) if config.reward_head["dist"] == "symlog_disc" else (),
+        #     config.reward_head["layers"],
+        #     config.units,
+        #     config.act,
+        #     config.norm,
+        #     dist=config.reward_head["dist"],
+        #     outscale=config.reward_head["outscale"],
+        #     device=config.device,
+        #     name="Reward",
+        # )
+        # self.heads["cont"] = networks.MLP(
+        #     feat_size,
+        #     (),
+        #     config.cont_head["layers"],
+        #     config.units,
+        #     config.act,
+        #     config.norm,
+        #     dist="binary",
+        #     outscale=config.cont_head["outscale"],
+        #     device=config.device,
+        #     name="Cont",
+        # )
         for name in config.grad_heads:
             assert name in self.heads, name
         self._model_opt = tools.Optimizer(
@@ -183,11 +183,12 @@ class WorldModel(nn.Module):
             obs["discount"] = obs["discount"].unsqueeze(-1)
         # 'is_first' is necesarry to initialize hidden state at training
         assert "is_first" in obs
-        # 'is_terminal' is necesarry to train cont_head
-        assert "is_terminal" in obs
-        obs["cont"] = (1.0 - obs["is_terminal"]).unsqueeze(-1)
+        # # 'is_terminal' is necesarry to train cont_head
+        # assert "is_terminal" in obs
+        # obs["cont"] = (1.0 - obs["is_terminal"]).unsqueeze(-1)
         return obs
 
+    @torch.no_grad()
     def video_pred(self, data):
         data = self.preprocess(data)
         embed = self.encoder(data)
@@ -198,11 +199,11 @@ class WorldModel(nn.Module):
         recon = self.heads["decoder"](self.dynamics.get_feat(states))["image"].mode()[
             :6
         ]
-        reward_post = self.heads["reward"](self.dynamics.get_feat(states)).mode()[:6]
+        # reward_post = self.heads["reward"](self.dynamics.get_feat(states)).mode()[:6]
         init = {k: v[:, -1] for k, v in states.items()}
         prior = self.dynamics.imagine_with_action(data["action"][:6, 5:], init)
         openl = self.heads["decoder"](self.dynamics.get_feat(prior))["image"].mode()
-        reward_prior = self.heads["reward"](self.dynamics.get_feat(prior)).mode()
+        # reward_prior = self.heads["reward"](self.dynamics.get_feat(prior)).mode()
         # observed image is given until 5 steps
         model = torch.cat([recon[:, :5], openl], 1)
         truth = data["image"][:6]

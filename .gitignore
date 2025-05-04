@@ -136,3 +136,7 @@ dmypy.json
 
 # VScode
 .vscode/*
+
+ckpt/
+wandb/
+
