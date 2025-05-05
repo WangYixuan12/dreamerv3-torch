@@ -1,7 +1,7 @@
 defaults:
   - base_dataset
 
-dataset_dir: '/media/yixuan/Extreme SSD/projects/diffusion-forcing/data/sim_aloha/pusht_0407'
+dataset_dir: '/scratch/bcyd/ywang41/diffusion-forcing/data/sim_aloha/pusht_0407'
 horizon: 10
 skip_frame: 5
 pad_after: 7

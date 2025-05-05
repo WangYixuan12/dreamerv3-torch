@@ -54,7 +54,7 @@ wm.to(config.device)
 num_epoch = 1000
 step_i = 0
 pred_vid_every_steps = 1000
-val_every_steps = 10
+val_every_steps = 1000
 ckpt_every_steps = 1000
 
 for epoch in range(num_epoch):
