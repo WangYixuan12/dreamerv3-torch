@@ -15,14 +15,14 @@ from datasets.sim_aloha_dataset import SimAlohaDataset
 
 Path('ckpt').mkdir(parents=True, exist_ok=True)
 
-obs_space = Dict({'image': Box(low=0, high=255, shape=(128,128,3), dtype=np.uint8)})
+dataset_cfg_path = 'sim_aloha_dataset.yaml'
+dataset_cfg = OmegaConf.load(dataset_cfg_path)
+obs_space = Dict({'image': Box(low=0, high=255, shape=(dataset_cfg.resolution,dataset_cfg.resolution,3), dtype=np.uint8)})
 act_space = Box(low=-1, high=1, shape=(20,), dtype=np.float32)
 config_path = 'my_config.yaml'
 config = OmegaConf.load(config_path)
 config.num_actions = act_space.shape[0]
 
-dataset_cfg_path = 'sim_aloha_dataset.yaml'
-dataset_cfg = OmegaConf.load(dataset_cfg_path)
 train_dataset = SimAlohaDataset(dataset_cfg)
 val_dataset = train_dataset.get_validation_dataset()
 train_dataloader = torch.utils.data.DataLoader(
@@ -88,6 +88,9 @@ for epoch in range(num_epoch):
         
         # save model
         if step_i % ckpt_every_steps == 0:
-            ckpt_path = f"ckpt/latest.ckpt"
+            ymd = datetime.now().strftime('%Y-%m-%d')
+            hms = datetime.now().strftime('%H-%M-%S')
+            ckpt_path = f"ckpt/{ymd}/{hms}/latest.pth"
+            Path(os.path.dirname(ckpt_path)).mkdir(parents=True, exist_ok=True)
             torch.save(wm.state_dict(), ckpt_path)
     
