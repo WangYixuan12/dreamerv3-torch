@@ -69,6 +69,7 @@ for epoch in range(num_epoch):
             for i in range(vid.shape[0]):
                 vid_np = vid[i].detach().cpu().numpy()
                 vid_np = np.transpose(vid_np, (0, 3, 1, 2))
+                vid_np = np.clip(vid_np, 0, 1)
                 vid_np = (vid_np * 255).astype(np.uint8)
                 wandb.log({f"train_vis/video_{i}": wandb.Video(vid_np, caption=f"video_{i}")})
         
@@ -82,6 +83,7 @@ for epoch in range(num_epoch):
             for i in range(vid.shape[0]):
                 vid_np = vid[i].detach().cpu().numpy()
                 vid_np = np.transpose(vid_np, (0, 3, 1, 2))
+                vid_np = np.clip(vid_np, 0, 1)
                 vid_np = (vid_np * 255).astype(np.uint8)
                 wandb.log({f"val_vis/video_{i}": wandb.Video(vid_np, caption=f"video_{i}")})
         step_i += 1
