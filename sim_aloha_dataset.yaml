@@ -1,7 +1,7 @@
 defaults:
   - base_dataset
 
-dataset_dir: '/scratch/bcyd/ywang41/diffusion-forcing/data/sim_aloha/pusht_0407'
+dataset_dir: '/scratch/bcyd/ywang41/diffusion-forcing/data/sim_aloha/pusht_0407_64'
 horizon: 10
 skip_frame: 5
 pad_after: 7
@@ -11,7 +11,7 @@ seed: 42
 val_ratio: 0.1
 skip_idx: 20
 use_cache: true
-resolution: 128
+resolution: 64
 obs_keys: [top_pov]
 delta_action: false
 action_mode: bimanual_push
@@ -24,6 +24,6 @@ shape_meta:
     top_pov:
       shape:
       - 3 # C
-      - 128 # H
-      - 128 # W
+      - 64 # H
+      - 64 # W
       type: rgb

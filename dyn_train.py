@@ -40,9 +40,12 @@ val_dataloader = torch.utils.data.DataLoader(
     persistent_workers=True,
 )
 
+ymd = datetime.now().strftime('%Y-%m-%d')
+hms = datetime.now().strftime('%H-%M-%S')
+
 wandb.init(
     project="dreamerv3",
-    name=f"{config.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+    name=f"{config.name}_{ymd}_{hms}",
     entity="yixuan1999",
     config=OmegaConf.to_container(config, resolve=True),
     mode="online",
@@ -90,8 +93,6 @@ for epoch in range(num_epoch):
         
         # save model
         if step_i % ckpt_every_steps == 0:
-            ymd = datetime.now().strftime('%Y-%m-%d')
-            hms = datetime.now().strftime('%H-%M-%S')
             ckpt_path = f"ckpt/{ymd}/{hms}/latest.pth"
             Path(os.path.dirname(ckpt_path)).mkdir(parents=True, exist_ok=True)
             torch.save(wm.state_dict(), ckpt_path)
