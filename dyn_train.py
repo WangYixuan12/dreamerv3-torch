@@ -10,8 +10,8 @@ from omegaconf import OmegaConf
 import wandb
 from tqdm import tqdm
 
-import models
-from datasets.sim_aloha_dataset import SimAlohaDataset
+import dreamerv3_torch.models as models
+from dreamerv3_torch.datasets.sim_aloha_dataset import SimAlohaDataset
 
 Path('ckpt').mkdir(parents=True, exist_ok=True)
 

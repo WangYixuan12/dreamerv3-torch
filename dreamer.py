@@ -13,9 +13,9 @@ import ruamel.yaml as yaml
 sys.path.append(str(pathlib.Path(__file__).parent))
 
 import exploration as expl
-import models
-import tools
-import envs.wrappers as wrappers
+import dreamerv3_torch.models as models
+import dreamerv3_torch.tools as tools
+import dreamerv3_torch.envs.wrappers as wrappers
 from parallel import Parallel, Damy
 
 import torch
@@ -163,14 +163,14 @@ def make_dataset(episodes, config):
 def make_env(config, mode, id):
     suite, task = config.task.split("_", 1)
     if suite == "dmc":
-        import envs.dmc as dmc
+        import dreamerv3_torch.envs.dmc as dmc
 
         env = dmc.DeepMindControl(
             task, config.action_repeat, config.size, seed=config.seed + id
         )
         env = wrappers.NormalizeActions(env)
     elif suite == "atari":
-        import envs.atari as atari
+        import dreamerv3_torch.envs.atari as atari
 
         env = atari.Atari(
             task,
@@ -186,7 +186,7 @@ def make_env(config, mode, id):
         )
         env = wrappers.OneHotAction(env)
     elif suite == "dmlab":
-        import envs.dmlab as dmlab
+        import dreamerv3_torch.envs.dmlab as dmlab
 
         env = dmlab.DeepMindLabyrinth(
             task,
@@ -196,17 +196,17 @@ def make_env(config, mode, id):
         )
         env = wrappers.OneHotAction(env)
     elif suite == "memorymaze":
-        from envs.memorymaze import MemoryMaze
+        from dreamerv3_torch.envs.memorymaze import MemoryMaze
 
         env = MemoryMaze(task, seed=config.seed + id)
         env = wrappers.OneHotAction(env)
     elif suite == "crafter":
-        import envs.crafter as crafter
+        import dreamerv3_torch.envs.crafter as crafter
 
         env = crafter.Crafter(task, config.size, seed=config.seed + id)
         env = wrappers.OneHotAction(env)
     elif suite == "minecraft":
-        import envs.minecraft as minecraft
+        import dreamerv3_torch.envs.minecraft as minecraft
 
         env = minecraft.make_env(task, size=config.size, break_speed=config.break_speed)
         env = wrappers.OneHotAction(env)
