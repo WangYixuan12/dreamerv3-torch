@@ -4,8 +4,8 @@ from typing import Dict
 import torch
 import torch.nn
 
-from utils.normalizer import LinearNormalizer
-from utils.sampler import SequenceSampler
+from dreamerv3_torch.utils.normalizer import LinearNormalizer
+from dreamerv3_torch.utils.sampler import SequenceSampler
 
 
 class BaseLowdimDataset(torch.utils.data.Dataset):

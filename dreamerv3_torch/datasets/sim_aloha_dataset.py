@@ -20,8 +20,8 @@ from tqdm import tqdm
 from yixuan_utilities.draw_utils import center_crop
 from yixuan_utilities.kinematics_helper import KinHelper
 
-from utils.imagecodecs_numcodecs import Jpeg2k, register_codecs
-from utils.normalizer import (
+from dreamerv3_torch.utils.imagecodecs_numcodecs import Jpeg2k, register_codecs
+from dreamerv3_torch.utils.normalizer import (
     LinearNormalizer,
     SingleFieldLinearNormalizer,
     array_to_stats,
@@ -30,9 +30,9 @@ from utils.normalizer import (
     get_image_range_normalizer,
     get_range_normalizer_from_stat,
 )
-from utils.pytorch_util import dict_apply
-from utils.replay_buffer import ReplayBuffer
-from utils.sampler import SequenceSampler, get_val_mask
+from dreamerv3_torch.utils.pytorch_util import dict_apply
+from dreamerv3_torch.utils.replay_buffer import ReplayBuffer
+from dreamerv3_torch.utils.sampler import SequenceSampler, get_val_mask
 
 from .base_dataset import BaseImageDataset
 
@@ -438,6 +438,8 @@ class SimAlohaDataset(BaseImageDataset):
         self.delta_action = cfg.delta_action
         if self.delta_action:
             self.kin_helper = KinHelper("trossen_vx300s")
+        
+        self.normalizer = self.get_normalizer()
 
     def get_normalizer(self, mode: str = "none", **kwargs: dict) -> LinearNormalizer:
         """Return a normalizer for the dataset."""
@@ -547,9 +549,11 @@ class SimAlohaDataset(BaseImageDataset):
         actions = actions.reshape(downsample_horizon, self.skip_frame * action_dim)
         is_first = np.zeros((downsample_horizon,), dtype=np.float32)
         is_first[0] = 1.0
+        actions = torch.from_numpy(actions).requires_grad_(False)
+        norm_actions = self.normalizer["action"].normalize(actions)
         data = {
             "image": torch.from_numpy(obs_dict[self.rgb_keys[0]]),
-            "action": torch.from_numpy(actions),
+            "action": norm_actions,
             "is_first": torch.from_numpy(is_first),
         }
         return data

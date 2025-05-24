@@ -12,18 +12,30 @@ from tqdm import tqdm
 
 import dreamerv3_torch.models as models
 from dreamerv3_torch.datasets.sim_aloha_dataset import SimAlohaDataset
+from dreamerv3_torch.datasets.dinowm_pusht_dataset import DINOWMPushTDataset
 
-Path('ckpt').mkdir(parents=True, exist_ok=True)
 
-dataset_cfg_path = 'sim_aloha_dataset.yaml'
+# dataset_cfg_path = 'sim_aloha_dataset.yaml'
+# config_path = 'my_config.yaml'
+# action_dim = 20
+dataset_cfg_path = 'dinowm_pusht_dataset.yaml'
+config_path = 'my_config_dinowm_pusht.yaml'
+action_dim = 10
+
 dataset_cfg = OmegaConf.load(dataset_cfg_path)
 obs_space = Dict({'image': Box(low=0, high=255, shape=(dataset_cfg.resolution,dataset_cfg.resolution,3), dtype=np.uint8)})
-act_space = Box(low=-1, high=1, shape=(20,), dtype=np.float32)
-config_path = 'my_config.yaml'
+act_space = Box(low=-1, high=1, shape=(action_dim,), dtype=np.float32)
 config = OmegaConf.load(config_path)
 config.num_actions = act_space.shape[0]
 
-train_dataset = SimAlohaDataset(dataset_cfg)
+ymd = datetime.now().strftime('%Y-%m-%d')
+hms = datetime.now().strftime('%H-%M-%S')
+
+Path(f"{config.logdir}/ckpt/{ymd}/{hms}").mkdir(parents=True, exist_ok=True)
+
+# train_dataset = SimAlohaDataset(dataset_cfg)
+train_dataset = DINOWMPushTDataset(dataset_cfg)
+
 val_dataset = train_dataset.get_validation_dataset()
 train_dataloader = torch.utils.data.DataLoader(
     train_dataset,
@@ -40,8 +52,6 @@ val_dataloader = torch.utils.data.DataLoader(
     persistent_workers=True,
 )
 
-ymd = datetime.now().strftime('%Y-%m-%d')
-hms = datetime.now().strftime('%H-%M-%S')
 
 wandb.init(
     project="dreamerv3",
@@ -93,7 +103,7 @@ for epoch in range(num_epoch):
         
         # save model
         if step_i % ckpt_every_steps == 0:
-            ckpt_path = f"ckpt/{ymd}/{hms}/latest.pth"
+            ckpt_path = f"{config.logdir}/ckpt/{ymd}/{hms}/latest.pth"
             Path(os.path.dirname(ckpt_path)).mkdir(parents=True, exist_ok=True)
             torch.save(wm.state_dict(), ckpt_path)
     

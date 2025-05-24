@@ -1,0 +1,30 @@
+defaults:
+  - base_dataset
+
+dataset_dir: ../dino_wm/data/pusht_noise_200
+horizon: 10
+skip_frame: 5
+pad_after: 7
+pad_before: 1
+rotation_rep: rotation_6d
+seed: 42
+skip_idx: 20
+use_cache: true
+resolution: 128
+obs_keys: [image]
+low_dim_keys: []
+is_val: false
+shape_meta:
+  action:
+    shape:
+    - 2
+  obs:
+    proprios:
+      shape:
+      - 4
+    image:
+      shape:
+      - 3 # C
+      - 128 # H
+      - 128 # W
+      type: rgb
