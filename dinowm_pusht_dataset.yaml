@@ -1,7 +1,7 @@
 defaults:
   - base_dataset
 
-dataset_dir: ../dino_wm/data/pusht_noise_200
+dataset_dir: ../dino_wm/data/pusht_noise
 horizon: 10
 skip_frame: 5
 pad_after: 7
