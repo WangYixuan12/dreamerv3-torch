@@ -378,9 +378,8 @@ class DINOWMPushTDataset(BaseImageDataset):
         )
         is_first = np.zeros((downsample_horizon,), dtype=np.float32)
         is_first[0] = 1.0
-        with torch.no_grad():
-            actions = torch.from_numpy(actions).requires_grad_(False)
-            norm_actions = self.normalizer["action"].normalize(actions)
+        actions = torch.from_numpy(actions).requires_grad_(False)
+        norm_actions = self.normalizer["action"].normalize(actions).detach()
         data = {
             "image": torch.from_numpy(obs_dict[self.rgb_keys[0]]),
             "action": norm_actions,

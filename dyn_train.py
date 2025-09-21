@@ -13,28 +13,38 @@ from tqdm import tqdm
 import dreamerv3_torch.models as models
 from dreamerv3_torch.datasets.sim_aloha_dataset import SimAlohaDataset
 from dreamerv3_torch.datasets.dinowm_pusht_dataset import DINOWMPushTDataset
+from dreamerv3_torch.datasets.real_aloha_dataset import RealAlohaDataset
 
 
 # dataset_cfg_path = 'sim_aloha_dataset.yaml'
 # config_path = 'my_config.yaml'
 # action_dim = 20
-dataset_cfg_path = 'dinowm_pusht_dataset.yaml'
-config_path = 'my_config_dinowm_pusht.yaml'
-action_dim = 10
+# dataset_cfg_path = 'dinowm_pusht_dataset.yaml'
+# config_path = 'my_config_dinowm_pusht.yaml'
+# action_dim = 10
+dataset_cfg_path = 'real_aloha_dataset.yaml'
+config_path = 'my_config_real_aloha.yaml'
+action_dim = 20
 
 dataset_cfg = OmegaConf.load(dataset_cfg_path)
 obs_space = Dict({'image': Box(low=0, high=255, shape=(dataset_cfg.resolution,dataset_cfg.resolution,3), dtype=np.uint8)})
 act_space = Box(low=-1, high=1, shape=(action_dim,), dtype=np.float32)
 config = OmegaConf.load(config_path)
 config.num_actions = act_space.shape[0]
+exp_name = config.name
 
 ymd = datetime.now().strftime('%Y-%m-%d')
 hms = datetime.now().strftime('%H-%M-%S')
 
 Path(f"{config.logdir}/ckpt/{ymd}/{hms}").mkdir(parents=True, exist_ok=True)
 
-# train_dataset = SimAlohaDataset(dataset_cfg)
-train_dataset = DINOWMPushTDataset(dataset_cfg)
+dataset_cls = {
+    'sim_aloha': SimAlohaDataset,
+    'dinowm_pusht': DINOWMPushTDataset,
+    'real_aloha': RealAlohaDataset,
+}
+
+train_dataset = dataset_cls[config.name](dataset_cfg)
 
 val_dataset = train_dataset.get_validation_dataset()
 train_dataloader = torch.utils.data.DataLoader(
